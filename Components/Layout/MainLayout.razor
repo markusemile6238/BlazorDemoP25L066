@@ -1,0 +1,60 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+
+@using BlazorDemoP25L066.Service
+@using BootstrapBlazor.Components;
+@inject BreadCrumbService BreadcrumbService;
+
+
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            @if (BreadcrumbService.Items.Count > 0)
+            {
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        @foreach(var item in BreadcrumbService.Items)
+                        {
+                            if (item.IsActive)
+                            {
+                                <li class="breadcrumb-item active">@item.Label</li>
+                            }
+                            else
+                            {
+                                <li class="breadcrumb-item">
+                                    <NavLink class="nav-link mx-0" href="@item.Url">@item.Label</NavLink>
+                                </li>
+                            }
+                        }
+                    </ol>
+                </nav>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code{
+    protected override void OnInitialized()
+    {
+        BreadcrumbService.OnChange += StateHasChanged;
+    }
+     public void Dispose()
+    {
+        BreadcrumbService.OnChange -= StateHasChanged;
+    }
+}
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

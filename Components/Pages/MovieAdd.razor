@@ -1,0 +1,148 @@
+﻿@page "/MovieAdd"
+@rendermode InteractiveServer
+@using BootstrapBlazor.Components;
+@using System.Collections.ObjectModel;
+@using BlazorDemoP25L066.Components.Models
+@using BlazorDemoP25L066.Service
+
+@inject MovieService movieService
+@inject NavigationManager navigation
+
+<h3>Ajouter un film</h3>
+
+<EditForm Model="@newMovie" OnValidSubmit="AddMovie" FormName="addMovieForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Titre</label>
+        <InputText class="form-control" @bind-Value="newMovie.Title" />
+        <ValidationMessage For="@(() => newMovie.Title)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Genre</label>
+        <InputText class="form-control" @bind-Value="newMovie.Genre" />
+        <ValidationMessage For="@(() => newMovie.Genre)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Réalisateur</label>
+        <InputText class="form-control" @bind-Value="newMovie.Director" />
+        <ValidationMessage For="@(() => newMovie.Director)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Année</label>
+        <InputNumber class="form-control" @bind-Value="newMovie.Year" />
+        <ValidationMessage For="@(() => newMovie.Year)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Fanart (URL)</label>
+        <InputText class="form-control" @bind-Value="newMovie.Fanart" />
+        <ValidationMessage For="@(() => newMovie.Fanart)" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">BackArt (URL)</label>
+        <InputText class="form-control" @bind-Value="newMovie.BackArt" />
+    </div>
+    
+    <hr />
+
+    <h5>Acteurs</h5>
+
+    <div class="row g-2 align-items-end mb-3">
+        <div class="col-md-5">
+            <label class="form-label">Prénom</label>
+            <InputText class="form-control" @bind-Value="actorFirstname" />
+        </div>
+
+        <div class="col-md-5">
+            <label class="form-label">Nom</label>
+            <InputText class="form-control" @bind-Value="actorLastname" />
+        </div>
+
+        <div class="col-md-2 d-grid">
+            <button type="button" class="btn btn-primary" @onclick="AddActor">
+                Ajouter
+            </button>
+        </div>
+    </div>
+
+    @if (newMovie.Cast.Count > 0)
+    {
+        <ul class="list-group mb-3">
+            @foreach (var actor in newMovie.Cast)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>@actor.Firstname @actor.Lastname</span>
+
+                    <button type="button"
+                            class="btn btn-sm btn-danger"
+                            @onclick="() => RemoveActor(actor)">
+                        Supprimer
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p><em>Aucun acteur ajouté.</em></p>
+    }
+
+    <button type="submit" class="btn btn-success">
+        Ajouter
+    </button>
+
+    <NavLink class="btn btn-secondary ms-2"
+            href="/">
+        Annuler
+    </NavLink>
+</EditForm>
+
+@code {
+    private Movie newMovie = new()
+        {
+            Cast = new Collection<Actor>()
+        };
+
+    
+    private string actorFirstname = string.Empty;
+    private string actorLastname = string.Empty;
+
+ 
+
+    private void AddActor()
+    {
+        if(string.IsNullOrWhiteSpace(actorFirstname) || string.IsNullOrWhiteSpace(actorLastname))
+        {
+            return; // ne pas ajouter d'acteur si les champs sont vides
+        }
+
+        // numero de l'acteur : 1 + le max des id des acteurs déjà présents, ou 1 si aucun acteur
+        int newActorId = newMovie.Cast.Count > 0 ? newMovie.Cast.Max(a => a.Id) + 1 : 1;
+
+        newMovie.Cast.Add(new Actor
+        {
+            Id = newActorId,
+            Firstname = actorFirstname,
+            Lastname = actorLastname
+        });
+
+        actorFirstname = string.Empty;
+        actorLastname = string.Empty;
+    }
+
+    private void RemoveActor(Actor actor)
+    {
+        newMovie.Cast.Remove(actor);
+    }
+
+    private void AddMovie()
+    {
+        movieService.AddMovie(newMovie);
+        navigation.NavigateTo("/MovieList"); // retour liste
+    }
+}

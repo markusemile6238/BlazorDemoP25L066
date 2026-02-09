@@ -1,0 +1,83 @@
+﻿@page "/MovieList"
+@rendermode InteractiveServer
+@using BlazorDemoP25L066.Components.Models
+@using System.Collections.ObjectModel
+@using BlazorDemoP25L066.Service
+@using BootstrapBlazor.Components;
+@using Microsoft.JSInterop
+
+
+@inject IJSRuntime Js;
+@inject BreadCrumbService breadcrumb;
+@inject NavigationManager navigation;
+
+<h3>MovieList</h3>
+
+<div class="text-center mt-4">
+    <NavLink class="btn btn-success" href="/MovieAdd">
+        + Ajouter un film
+    </NavLink>
+</div>
+
+<table class="table w-100">
+    <thead>
+        <tr class="min-height:">
+            <th>Title</th>
+            <th>Year</th>
+            <th></th>
+            <th class="text-center">Action</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @if (favoriteOnly && !movieService.GetAllMovies().Any(m => m.Favorit))
+        {
+            <div class="alert alert-warning">
+                Aucun film favori pour le moment.
+            </div>
+        }
+
+        @foreach (var movie in Movies)
+        {
+            <tr>
+                <td class="w-50">@movie.Title</td>
+                <td class="w-10">@movie.Year</td>
+                <td class="w-20">                    
+                    @if (!string.IsNullOrEmpty(movie.Fanart))
+                    {
+                        <img src="@movie.Fanart" style="width: 75px; height: auto;" alt="@movie.Title" />
+                    }
+                    else
+                    {
+                        <span></span>
+                    }
+                </td>
+                <td class="align-middle text-center">
+                    <div class="d-flex justify-content-center align-items-center" style="min-height: 75px;">
+                        <NavLink href="@($"/MovieDetails/{movie.Id}")"
+                                 class="btn btn-primary txt-decoration-none mx-2">
+                            Details
+                        </NavLink>
+                        <NavLink href="@($"/MovieUpdate/{movie.Id}")"
+                                 class="btn btn-secondary txt-decoration-none mx-2">
+                            Update
+                        </NavLink>
+                        <Button Color="Color.Danger" class="mx-2" @onclick="() => ConfirmDelete(movie.Id, movie.Title)">
+                            Delete
+                        </Button>
+
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code{
+
+
+
+}
+
+
+

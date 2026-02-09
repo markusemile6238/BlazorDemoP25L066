@@ -1,0 +1,22 @@
+﻿
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Movie Database</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">   
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/movieList?favorite=false">
+                <i class="fa-solid fa-clapperboard mx-2"></i> Movies List
+            </NavLink>
+            <NavLink class="nav-link" href="/movieList?favorite=true">
+                <i class="fa-solid fa-star mx-2"></i> Favorite Movies
+            </NavLink>
+        </div>
+    </nav>
+</div>
+

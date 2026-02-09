@@ -1,0 +1,22 @@
+﻿@page "/"
+@using BlazorDemoP25L066.Components.Models
+@using BlazorDemoP25L066.Service
+
+@inject BreadCrumbService breadCrumb;
+
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+
+@code{
+    protected override void OnInitialized()
+    {
+        breadCrumb.Set(
+            new BreadCrumbItem { Label = "Home", Url = "/", IsActive = true }
+        );
+    }
+}

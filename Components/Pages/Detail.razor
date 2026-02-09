@@ -1,0 +1,83 @@
+﻿@page "/MovieDetails/{Id:int}"
+@rendermode InteractiveServer
+@using BlazorDemoP25L066.Components.Models;
+@using BlazorDemoP25L066.Components.Pages;
+@using BlazorDemoP25L066.Service
+@using System.Diagnostics;
+@inject MovieService movieService;
+@inject BreadCrumbService breadCrumb;
+
+@if (currentMovie != null)
+{
+    <div class="banner" style="background-image: url('@currentMovie.BackArt');">
+    </div>
+
+    <div class=" d-flex">
+        <div class="poster-row">
+            <img src="@currentMovie.Fanart" class="card-img-top" alt="@currentMovie.Title">
+        </div>
+        <div class="content">
+            <div class="d-flex">
+                <h2 class="card-title mx-2">@currentMovie.Title (@currentMovie.Year)</h2>
+
+                @if (@currentMovie.Favorit)
+                {
+                    <Button Color="Color.Warning" Size="Size.Small" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;padding:0;">
+                        <i class="fa-regular fa-star"></i>
+                    </Button>
+                }
+                else
+                {
+                    <Button Color="Color.Warning" Size="Size.Small" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;padding:0;" OnClick="AddTofavorite">
+                        <i class="fa-solid fa-plus"></i>
+                    </Button>
+                }
+
+            </div>
+
+            <p class="card-text"><strong>Réalisateur :</strong> @currentMovie.Director</p>
+            <p class="card-text"><strong>Genre :</strong> @currentMovie.Genre</p>
+            <h6>Distribution :</h6>
+            <ul>
+                @foreach (var actor in currentMovie.Cast)
+                {
+                    <li>@actor.Firstname @actor.Lastname</li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+else
+{
+    <p><em>Film non trouvé...</em></p>
+}
+
+
+@code {
+
+    private void AddTofavorite()
+    {
+        if (currentMovie == null) return;
+        System.Console.WriteLine($"add to favorite {currentMovie.Id}");
+        movieService.AddToFavorite(currentMovie.Id);
+        StateHasChanged();
+    }
+
+
+    [Parameter]
+
+    public int Id { get; set; } // Ajout du set; indispensable
+
+    private Movie? currentMovie;
+    protected override void OnParametersSet()
+    {
+        string currentUrl = $"/MovieDetail/{Id}";
+        string currentLabel = $"Detail / {currentMovie?.Id}";
+        currentMovie = movieService.GetMovieById(Id);
+        breadCrumb.Set(
+            new BreadCrumbItem { Label = "Home", Url = "/", IsActive = false },
+            new BreadCrumbItem { Label = "Movie List", Url = "/MovieList", IsActive = false },
+            new BreadCrumbItem { Label = currentLabel, Url = currentUrl.ToString(), IsActive = true }
+        );
+    }
+}

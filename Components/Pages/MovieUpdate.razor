@@ -1,0 +1,186 @@
+﻿@page "/MovieUpdate/{Id:int}"
+@rendermode InteractiveServer
+@using System.Linq;
+@using BlazorDemoP25L066.Components.Models
+@using BlazorDemoP25L066.Service
+@using System.Collections.ObjectModel
+
+@inject MovieService movieService
+@inject NavigationManager navigation
+
+<h3>Modifier un film</h3>
+
+@if (movieToEdit == null)
+{
+    <p><em>Film introuvable...</em></p>
+}
+else
+{
+    <EditForm Model="@movieToEdit" OnValidSubmit="Save" FormName="updateMovieForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Titre</label>
+            <InputText class="form-control" @bind-Value="movieToEdit.Title" />
+            <ValidationMessage For="@(() => movieToEdit.Title)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Genre</label>
+            <InputText class="form-control" @bind-Value="movieToEdit.Genre" />
+            <ValidationMessage For="@(() => movieToEdit.Genre)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Réalisateur</label>
+            <InputText class="form-control" @bind-Value="movieToEdit.Director" />
+            <ValidationMessage For="@(() => movieToEdit.Director)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Année</label>
+            <InputNumber class="form-control" @bind-Value="movieToEdit.Year" />
+            <ValidationMessage For="@(() => movieToEdit.Year)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Fanart (URL)</label>
+            <InputText class="form-control" @bind-Value="movieToEdit.Fanart" />
+            <ValidationMessage For="@(() => movieToEdit.Fanart)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">BackArt (URL)</label>
+            <InputText class="form-control" @bind-Value="movieToEdit.BackArt" />
+        </div>
+
+        <hr />
+
+        <h5>Acteurs</h5>
+
+        <div class="row g-2 align-items-end mb-3">
+            <div class="col-md-5">
+                <label class="form-label">Prénom</label>
+                <InputText class="form-control" @bind-Value="actorFirstname" />
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label">Nom</label>
+                <InputText class="form-control" @bind-Value="actorLastname" />
+            </div>
+
+            <div class="col-md-2 d-grid">
+                <button type="button" class="btn btn-primary" @onclick="AddActor">
+                    Ajouter
+                </button>
+            </div>
+        </div>
+
+        @if (movieToEdit.Cast.Count > 0)
+        {
+            <ul class="list-group mb-3">
+                @foreach (var actor in movieToEdit.Cast)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@actor.Firstname @actor.Lastname</span>
+
+                        <button type="button"
+                                class="btn btn-sm btn-danger"
+                                @onclick="() => RemoveActor(actor)">
+                            Supprimer
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p><em>Aucun acteur ajouté.</em></p>
+        }
+
+        <button type="submit" class="btn btn-success">
+            Sauvegarder
+        </button>
+
+        <button type="button" class="btn btn-secondary ms-2"
+                href="/MovieList">
+            Annuler
+        </button>
+    </EditForm>
+}
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Movie? movieToEdit;
+
+    private string actorFirstname = "";
+    private string actorLastname = "";
+
+    protected override void OnParametersSet()
+    {
+        var original = movieService.GetMovieById(Id);
+
+        if (original == null)
+        {
+            movieToEdit = null;
+            return;
+        }
+
+
+        movieToEdit = new Movie
+        {
+            Id = original.Id,
+            Title = original.Title,
+            Genre = original.Genre,
+            Director = original.Director,
+            Year = original.Year,
+            Fanart = original.Fanart,
+            BackArt = original.BackArt,
+            Cast = new Collection<Actor>(original.Cast.Select(a => new Actor
+            {
+                Id = a.Id,
+                Firstname = a.Firstname,
+                Lastname = a.Lastname
+            }).ToList())
+        };
+    }
+
+    private void AddActor()
+    {
+        if (movieToEdit == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(actorFirstname) || string.IsNullOrWhiteSpace(actorLastname))
+            return;
+
+        int newActorId = movieToEdit.Cast.Count == 0 ? 1 : movieToEdit.Cast.Max(a => a.Id) + 1;
+
+        movieToEdit.Cast.Add(new Actor
+        {
+            Id = newActorId,
+            Firstname = actorFirstname.Trim(),
+            Lastname = actorLastname.Trim()
+        });
+
+        actorFirstname = "";
+        actorLastname = "";
+    }
+
+    private void RemoveActor(Actor actor)
+    {
+        movieToEdit?.Cast.Remove(actor);
+    }
+
+    private void Save()
+    {
+        if (movieToEdit == null)
+            return;
+
+        movieService.UpdateMovie(movieToEdit);
+        navigation.NavigateTo("/MovieList");
+    }
+}
